@@ -1,9 +1,7 @@
 {
   lib,
   pkgs,
-}:
-
-let
+}: let
   pname = "t3code";
   version = "0.0.15";
   src = pkgs.fetchurl {
@@ -19,8 +17,8 @@ in
     pkgs = pkgs;
 
     extraInstallCommands = ''
-      install -m 444 -D ${appimageContents}/t3-code-desktop.desktop -t $out/share/applications
-      substituteInPlace $out/share/applications/t3-code-desktop.desktop \
+      install -m 444 -D ${appimageContents}/t3code.desktop -t $out/share/applications
+      substituteInPlace $out/share/applications/t3code.desktop \
         --replace 'Exec=AppRun' 'Exec=${pname}'
       cp -r ${appimageContents}/usr/share/icons $out/share
     '';
@@ -31,7 +29,8 @@ in
 
     dieWithParent = false;
 
-    extraPkgs = pkgs: with pkgs; [
-      autoPatchelfHook
-    ];
+    extraPkgs = pkgs:
+      with pkgs; [
+        autoPatchelfHook
+      ];
   }
