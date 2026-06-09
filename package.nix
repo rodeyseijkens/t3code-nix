@@ -3,10 +3,10 @@
   pkgs,
 }: let
   pname = "t3code";
-  version = "0.0.26";
+  version = "0.0.27";
   src = pkgs.fetchurl {
     url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/T3-Code-${version}-x86_64.AppImage";
-    hash = "sha256-1v8OP0xyIGowacPV7TKxOKfKS664YMiPGkrxWAUsrj0=";
+    hash = "sha256-ALkm7wSVbDlZR7TWVag3NRbP1kvGJQqmpR1mmZvSCAU=";
   };
   appimageContents = pkgs.appimageTools.extract {
     inherit pname version src;
