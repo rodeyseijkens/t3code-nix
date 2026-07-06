@@ -1,3 +1,7 @@
+> **⚠️ This repo is archived.** T3 Code is now available in the official nixpkgs repository.
+
+> **📦 Install directly:** [`t3code` on nixpkgs](https://search.nixos.org/packages?channel=unstable&query=t3code#show=t3code)
+
 # T3 Code for NixOS
 
 Unofficial Nix package for [T3 Code](https://t3.codes) - a minimal web GUI for coding agents.
