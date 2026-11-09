@@ -10,14 +10,28 @@
         inherit system;
         config.allowUnfree = true;
       };
+      versions = import ./versions.nix;
+      t3code = pkgs.callPackage ./package.nix {
+        inherit (versions.stable) version hash;
+      };
+      t3code-nightly = pkgs.callPackage ./package.nix {
+        pname = "t3code-nightly";
+        inherit (versions.nightly) version hash;
+      };
     in {
       packages.${system} = {
-        default = pkgs.callPackage ./package.nix {};
-        t3code = self.packages.${system}.default;
+        default = t3code;
+        inherit t3code t3code-nightly;
       };
 
       overlays.default = final: prev: {
-        t3code = final.callPackage ./package.nix {};
+        t3code = final.callPackage ./package.nix {
+          inherit (versions.stable) version hash;
+        };
+        t3code-nightly = final.callPackage ./package.nix {
+          pname = "t3code-nightly";
+          inherit (versions.nightly) version hash;
+        };
       };
 
       nixosModules.default = { pkgs, ... }: {
@@ -25,7 +39,7 @@
         programs.appimage.binfmt = true;
 
         environment.systemPackages = [
-          (pkgs.callPackage ./package.nix {})
+          self.packages.${system}.t3code
         ];
       };
     };

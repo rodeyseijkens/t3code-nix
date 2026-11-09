@@ -2,30 +2,46 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PACKAGE_NIX="$SCRIPT_DIR/package.nix"
+VERSIONS_NIX="$SCRIPT_DIR/versions.nix"
+RELEASES_API="https://api.github.com/repos/pingdotgg/t3code/releases"
 
-echo "Fetching latest version..."
-API_RESPONSE=$(curl -sL "https://api.github.com/repos/pingdotgg/t3code/releases/latest")
-LATEST_VERSION=$(echo "$API_RESPONSE" | jq -r '.tag_name' | sed 's/^v//')
+current_version() {
+    local channel="$1"
+    sed -n "/$channel = {/,/};/p" "$VERSIONS_NIX" \
+        | sed -n 's/.*version = "\(.*\)";/\1/p'
+}
 
-CURRENT_VERSION=$(grep 'version = ' "$PACKAGE_NIX" | head -1 | sed 's/.*"\(.*\)".*/\1/')
+# Latest stable release (GitHub excludes pre-releases from /latest).
+stable_version=$(curl -fsSL "$RELEASES_API/latest" | jq -r '.tag_name | sub("^v"; "")')
+# Latest nightly pre-release.
+nightly_version=$(curl -fsSL "$RELEASES_API?per_page=30" | jq -r '[.[] | select(.prerelease)][0].tag_name | sub("^v"; "")')
 
-echo "Current version: $CURRENT_VERSION"
-echo "Latest version:  $LATEST_VERSION"
+echo "Current stable:  $(current_version stable)"
+echo "Latest stable:   $stable_version"
+echo "Current nightly: $(current_version nightly)"
+echo "Latest nightly:  $nightly_version"
 
-if [ "$CURRENT_VERSION" = "$LATEST_VERSION" ]; then
-    echo "Already up to date!"
-    exit 0
-fi
+update_channel() {
+    local channel="$1" version="$2"
+    local current hash url
 
-echo "Fetching hash for $LATEST_VERSION..."
-DOWNLOAD_URL="https://github.com/pingdotgg/t3code/releases/download/v${LATEST_VERSION}/T3-Code-${LATEST_VERSION}-x86_64.AppImage"
-HASH=$(nix-prefetch-url "$DOWNLOAD_URL" 2>/dev/null)
-SRI_HASH=$(nix hash convert --to sri --hash-algo sha256 "$HASH")
+    current=$(current_version "$channel")
+    if [ "$current" = "$version" ]; then
+        echo "$channel is already up to date!"
+        return
+    fi
 
-echo "New SRI hash: $SRI_HASH"
+    echo "Fetching hash for $channel $version..."
+    url="https://github.com/pingdotgg/t3code/releases/download/v${version}/T3-Code-${version}-x86_64.AppImage"
+    hash=$(nix store prefetch-file --json "$url" | jq -r '.hash')
 
-sed -i "s/version = \"$CURRENT_VERSION\"/version = \"$LATEST_VERSION\"/" "$PACKAGE_NIX"
-sed -i "s|hash = \"sha256-[^\"]*\"|hash = \"$SRI_HASH\"|" "$PACKAGE_NIX"
+    echo "New $channel hash: $hash"
 
-echo "Updated package.nix to version $LATEST_VERSION"
+    sed -i "/$channel = {/,/};/ s|version = \"[^\"]*\"|version = \"$version\"|" "$VERSIONS_NIX"
+    sed -i "/$channel = {/,/};/ s|hash = \"sha256-[^\"]*\"|hash = \"$hash\"|" "$VERSIONS_NIX"
+
+    echo "Updated $channel to version $version"
+}
+
+update_channel stable "$stable_version"
+update_channel nightly "$nightly_version"
