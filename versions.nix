@@ -5,7 +5,7 @@
   };
 
   nightly = {
-    version = "0.1.9-preview.20261111.4511";
-    hash = "sha256-mxRStlT/gxb6ZOEWJa335jachO7+D3twG/d44sVIoqc=";
+    version = "0.1.10-nightly.20261111.4529";
+    hash = "sha256-CDJKs8H/BqPLKt6Ic0JCabIZtN7KI07XPxx4mWWZHNA=";
   };
 }
