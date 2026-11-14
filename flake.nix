@@ -12,11 +12,11 @@
       };
       versions = import ./versions.nix;
       t3code = pkgs.callPackage ./package.nix {
-        inherit (versions.stable) version hash;
+        inherit (versions.stable) version hash url;
       };
       t3code-nightly = pkgs.callPackage ./package.nix {
         pname = "t3code-nightly";
-        inherit (versions.nightly) version hash;
+        inherit (versions.nightly) version hash url;
       };
     in {
       packages.${system} = {
@@ -26,11 +26,11 @@
 
       overlays.default = final: prev: {
         t3code = final.callPackage ./package.nix {
-          inherit (versions.stable) version hash;
+          inherit (versions.stable) version hash url;
         };
         t3code-nightly = final.callPackage ./package.nix {
           pname = "t3code-nightly";
-          inherit (versions.nightly) version hash;
+          inherit (versions.nightly) version hash url;
         };
       };
 
