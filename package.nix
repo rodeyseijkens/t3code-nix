@@ -4,10 +4,10 @@
   pname ? "t3code",
   version,
   hash,
+  url ? "https://github.com/pingdotgg/t3code/releases/download/v${version}/T3-Code-${version}-x86_64.AppImage",
 }: let
   src = pkgs.fetchurl {
-    url = "https://github.com/pingdotgg/t3code/releases/download/v${version}/T3-Code-${version}-x86_64.AppImage";
-    inherit hash;
+    inherit url hash;
   };
   appimageContents = pkgs.appimageTools.extract {
     inherit pname version src;
