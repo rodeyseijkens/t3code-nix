@@ -20,6 +20,8 @@ jobs:
             experimental-features = nix-command flakes
 
       - name: Update packages
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: ./update.sh
 
       - name: Test build

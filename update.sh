@@ -5,6 +5,27 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VERSIONS_NIX="$SCRIPT_DIR/versions.nix"
 RELEASES_API="https://api.github.com/repos/pingdotgg/t3code/releases"
 ASSET_PATTERN='^T3-Code.*x86_64\.AppImage$'
+GITHUB_TOKEN="${GITHUB_TOKEN:-${GH_TOKEN:-}}"
+
+# GitHub's REST API rate limits anonymous requests per IP, and hosted runners
+# share egress addresses, so scheduled runs hit HTTP 403 (rate limited) often.
+# Use the token the workflow passes in and stay anonymous for local runs.
+api_get() {
+    local -a auth=()
+    if [ -n "$GITHUB_TOKEN" ]; then
+        auth=(-H "Authorization: Bearer $GITHUB_TOKEN")
+    fi
+
+    if ! curl -fsSL --retry 3 --retry-delay 2 --retry-connrefused \
+        -H "Accept: application/vnd.github+json" \
+        ${auth[@]+"${auth[@]}"} "$@"; then
+        echo "error: GitHub API request failed: $*" >&2
+        if [ -z "$GITHUB_TOKEN" ]; then
+            echo "hint: set GITHUB_TOKEN, anonymous requests are rate limited per IP" >&2
+        fi
+        return 1
+    fi
+}
 
 channel_field() {
     local channel="$1" key="$2"
@@ -18,7 +39,7 @@ channel_field() {
 # exists and fall back to whatever AppImage the release actually contains.
 asset_url() {
     local version="$1"
-    curl -fsSL "$RELEASES_API/tags/v${version}" \
+    api_get "$RELEASES_API/tags/v${version}" \
         | jq -er --arg version "$version" --arg pattern "$ASSET_PATTERN" '
             [.assets[].name | select(test($pattern))] as $names
             | (($names | map(select(contains($version))) | first) // ($names | first))
@@ -26,10 +47,10 @@ asset_url() {
           '
 }
 
-releases_json=$(curl -fsSL "$RELEASES_API?per_page=50")
+releases_json=$(api_get "$RELEASES_API?per_page=50")
 
 # Latest stable release (GitHub excludes pre-releases from /latest).
-stable_version=$(curl -fsSL "$RELEASES_API/latest" | jq -r '.tag_name | sub("^v"; "")')
+stable_version=$(api_get "$RELEASES_API/latest" | jq -r '.tag_name | sub("^v"; "")')
 
 # Newest nightly that actually ships an x86_64 AppImage. Restricting tags to the
 # v<version>-nightly.* shape skips unrelated pre-releases such as update-feed,
