@@ -1,13 +1,13 @@
 {
   stable = {
-    version = "0.1.11";
-    hash = "sha256-i6oGp7uqP3KdaUZvshHtcAbWpuTYALns2s2DH9FoaxQ=";
-    url = "https://github.com/pingdotgg/t3code/releases/download/v0.1.11/T3-Code-x86_64.AppImage";
+    version = "0.1.12";
+    hash = "sha256-ZrkVUVcd9tKbVctZApXt9BHP+WyVqP6z9Bw8pZXXIuI=";
+    url = "https://github.com/pingdotgg/t3code/releases/download/v0.1.12/T3-Code-x86_64.AppImage";
   };
 
   nightly = {
-    version = "0.1.12-nightly.20261125.5222";
-    hash = "sha256-lKuNdJhPFo79vywFxpOTRHrY5xJ4gS3laiWFZb2h7wQ=";
-    url = "https://github.com/pingdotgg/t3code/releases/download/v0.1.12-nightly.20261125.5222/T3-Code-Nightly-x86_64.AppImage";
+    version = "0.1.12-nightly.20261125.5230";
+    hash = "sha256-ShPPbtm6lRb/GVORVNHdhPFj4s4METEwVLL1hzmPnmY=";
+    url = "https://github.com/pingdotgg/t3code/releases/download/v0.1.12-nightly.20261125.5230/T3-Code-Nightly-x86_64.AppImage";
   };
 }
